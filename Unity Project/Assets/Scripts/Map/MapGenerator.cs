@@ -23,14 +23,6 @@ namespace TestApp.Map
             GenerateMap();
         }
 
-        private void Update()
-        {
-            if (Input.GetMouseButtonDown(0))
-            {
-                GenerateMap();
-            }
-        }
-
         private void GenerateMap()
         {
             map = new int[width, height];
