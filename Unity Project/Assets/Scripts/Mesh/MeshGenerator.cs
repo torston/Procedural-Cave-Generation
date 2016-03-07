@@ -8,7 +8,7 @@ namespace TestApp.Mesh
         public SquareGrid squareGrid;
         public MeshFilter walls;
         public MeshFilter cave;
-
+		public Square squareMy;
         public bool is2D;
 
         List<Vector3> vertices;
@@ -18,52 +18,76 @@ namespace TestApp.Mesh
         List<List<int>> outlines = new List<List<int>>();
         HashSet<int> checkedVertices = new HashSet<int>();
 
+
+		public void Collision(Vector3 position) 
+		{
+			squareGrid.GetClosest (position);
+
+			triangleDictionary.Clear();
+			outlines.Clear();
+			checkedVertices.Clear();
+			CreateMesh ();
+		}
+
         public void GenerateMesh(int[,] map, float squareSize)
         {
-
             triangleDictionary.Clear();
             outlines.Clear();
             checkedVertices.Clear();
 
             squareGrid = new SquareGrid(map, squareSize);
 
-            vertices = new List<Vector3>();
-            triangles = new List<int>();
-
-            for (int x = 0; x < squareGrid.squares.GetLength(0); x++)
-            {
-                for (int y = 0; y < squareGrid.squares.GetLength(1); y++)
-                {
-                    TriangulateSquare(squareGrid.squares[x, y]);
-                }
-            }
-
-            UnityEngine.Mesh mesh = new UnityEngine.Mesh();
-            cave.mesh = mesh;
-
-            mesh.vertices = vertices.ToArray();
-            mesh.triangles = triangles.ToArray();
-            mesh.RecalculateNormals();
-
-            int tileAmount = 10;
-            Vector2[] uvs = new Vector2[vertices.Count];
-            for (int i = 0; i < vertices.Count; i++)
-            {
-                float percentX = Mathf.InverseLerp(-map.GetLength(0) / 2 * squareSize, map.GetLength(0) / 2 * squareSize, vertices[i].x) * tileAmount;
-                float percentY = Mathf.InverseLerp(-map.GetLength(0) / 2 * squareSize, map.GetLength(0) / 2 * squareSize, vertices[i].z) * tileAmount;
-                uvs[i] = new Vector2(percentX, percentY);
-            }
-            mesh.uv = uvs;
-
-
-            if (is2D)
-            {
-                Generate2DColliders();
-            }
-            else {
-                CreateWallMesh();
-            }
+			CreateMesh ();
         }
+
+		void CreateMesh()
+		{
+			int count = 0;
+			for (int x = 0; x < squareGrid.map.GetLength(0); x++)
+			{
+				for (int y = 0; y < squareGrid.map.GetLength(1); y++)
+				{
+					count += squareGrid.map [x, y];
+				}
+			}
+			Menu.Instance.Nodes = count;
+			vertices = new List<Vector3>();
+			triangles = new List<int>();
+
+			for (int x = 0; x < squareGrid.squares.GetLength(0); x++)
+			{
+				for (int y = 0; y < squareGrid.squares.GetLength(1); y++)
+				{
+					TriangulateSquare(squareGrid.squares[x, y]);
+				}
+			}
+			UnityEngine.Mesh mesh = new UnityEngine.Mesh();
+			cave.mesh = mesh;
+
+			mesh.vertices = vertices.ToArray();
+			mesh.triangles = triangles.ToArray();
+			mesh.RecalculateNormals();
+
+			int tileAmount = 10;
+			Vector2[] uvs = new Vector2[vertices.Count];
+			for (int i = 0; i < vertices.Count; i++)
+			{
+				float percentX = Mathf.InverseLerp(-squareGrid.map.GetLength(0) / 2 * squareGrid.squareSize, squareGrid.map.GetLength(0) / 2 * squareGrid.squareSize, vertices[i].x) * tileAmount;
+				float percentY = Mathf.InverseLerp(-squareGrid.map.GetLength(0) / 2 * squareGrid.squareSize, squareGrid.map.GetLength(0) / 2 * squareGrid.squareSize, vertices[i].z) * tileAmount;
+				uvs[i] = new Vector2(percentX, percentY);
+			}
+			mesh.uv = uvs;
+
+
+			if (is2D)
+			{
+				Generate2DColliders();
+			}
+			else 
+			{
+				CreateWallMesh();
+			}
+		}
 
         void CreateWallMesh()
         {
@@ -103,6 +127,7 @@ namespace TestApp.Mesh
 
             MeshCollider wallCollider = gameObject.AddComponent<MeshCollider>();
             wallCollider.sharedMesh = wallMesh;
+
         }
 
         void Generate2DColliders()
@@ -132,6 +157,7 @@ namespace TestApp.Mesh
 
         void TriangulateSquare(Square square)
         {
+			//Debug.Log (1);
             switch (square.configuration)
             {
                 case 0:
@@ -201,7 +227,7 @@ namespace TestApp.Mesh
         {
             AssignVertices(points);
 
-            if (points.Length >= 3)
+            if (points.Length >= 3) 
                 CreateTriangle(points[0], points[1], points[2]);
             if (points.Length >= 4)
                 CreateTriangle(points[0], points[2], points[3]);
@@ -216,7 +242,7 @@ namespace TestApp.Mesh
         {
             for (int i = 0; i < points.Length; i++)
             {
-                if (points[i].vertexIndex == -1)
+                //if (points[i].vertexIndex == -1)
                 {
                     points[i].vertexIndex = vertices.Count;
                     vertices.Add(points[i].position);

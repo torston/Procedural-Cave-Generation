@@ -1,8 +1,14 @@
+using System;
+using UnityEngine;
+using System.Collections;
+using System.Collections.Generic;
+
+
 namespace TestApp.Mesh
 {
+	[Serializable]
     public class Square
     {
-
         public ControlNode topLeft, topRight, bottomRight, bottomLeft;
         public Node centreTop, centreRight, centreBottom, centreLeft;
         public int configuration;
@@ -28,6 +34,28 @@ namespace TestApp.Mesh
             if (bottomLeft.active)
                 configuration += 1;
         }
+
+		public void DrawSquare() {
+		
+			var list = new List<Node> ();
+
+			list.Add (topLeft);
+			list.Add (topRight);
+			list.Add (bottomRight);
+			list.Add (bottomLeft);
+			list.Add (centreTop);
+			list.Add (centreRight);
+			list.Add (centreBottom);
+			list.Add (centreLeft);
+
+			foreach (var item in list) 
+			{
+									var obj = GameObject.CreatePrimitive (PrimitiveType.Sphere);
+				obj.transform.position = item.position;
+									obj.transform.localScale = Vector3.one * 0.1f;
+			}
+
+		}
 
     }
 }

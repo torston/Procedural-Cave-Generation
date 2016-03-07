@@ -1,7 +1,9 @@
 using UnityEngine;
+using System;
 
 namespace TestApp.Mesh
 {
+	[Serializable]
     public class Node
     {
         public Vector3 position;
