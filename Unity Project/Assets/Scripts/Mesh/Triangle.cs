@@ -7,6 +7,8 @@ namespace TestApp.Mesh
         public int vertexIndexC;
         int[] vertices;
 
+        public bool created;
+
         public Triangle(int a, int b, int c)
         {
             vertexIndexA = a;
@@ -17,6 +19,8 @@ namespace TestApp.Mesh
             vertices[0] = a;
             vertices[1] = b;
             vertices[2] = c;
+
+            created = true;
         }
 
         public int this[int i]

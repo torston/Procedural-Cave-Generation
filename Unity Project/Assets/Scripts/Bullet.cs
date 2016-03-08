@@ -25,13 +25,15 @@ public class Bullet : MonoBehaviour
 	
 		rig.detectCollisions = true;
 		rig.collisionDetectionMode = CollisionDetectionMode.ContinuousDynamic;
-	}
+        rig.interpolation = RigidbodyInterpolation.Extrapolate;
 
-	void Update () 
+    }
+
+	void FixedUpdate () 
 	{
 		transform.Translate (direction, Space.World);
 
-		timeFlying += Time.deltaTime;
+		timeFlying += Time.fixedDeltaTime;
 
 		if (timeFlying >= time) {
 			DestroyBullet ();
@@ -44,8 +46,8 @@ public class Bullet : MonoBehaviour
 		{
 			return;
 		}
-
-		gen.Collision (collision.contacts [0].point);
+        GetComponent<Collider>().enabled = false;
+        gen.Collision (collision.contacts [0].point);
 		DestroyBullet ();
 	}
 

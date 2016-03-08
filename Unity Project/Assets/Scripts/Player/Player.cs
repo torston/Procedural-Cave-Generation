@@ -52,21 +52,18 @@ namespace TestApp.Player
 			if (collision.gameObject.tag != "wall") {
 				return;
 			}
+            GetComponent<Collider>().enabled = false;
+            //foreach (var contact in collision.contacts)
+		    {
 
-			generator.Collision (collision.contacts [0].point);
+                generator.Collision(collision.contacts[0].point);
+                var contactPoint = collision.collider.ClosestPointOnBounds(collision.contacts[0].point);
 
-			var contactPoint = collision.collider.ClosestPointOnBounds (collision.contacts [0].point);
+            }
 
+            GetComponent<Collider>().enabled = true;
 
-			return;
-			Debug.Log(contactPoint);
-
-			var d = GameObject.CreatePrimitive (PrimitiveType.Sphere);
-			Destroy (d.GetComponent<Collider>());
-			d.transform.position = contactPoint;
-
-
-		
+            return;
 		}
     }
 }
