@@ -1,7 +1,5 @@
-using System.Collections;
 using UnityEngine;
 using System.Collections.Generic;
-using System.Linq.Expressions;
 
 namespace TestApp.Mesh
 {
@@ -9,22 +7,20 @@ namespace TestApp.Mesh
     {
         public SquareGrid squareGrid;
         public MeshFilter walls;
-        public MeshFilter cave;
+        public Transform caveTransform;
 
-        List<Vector3> vertices;
+        private List<Vector3> vertices;
 
-        Dictionary<int, List<Triangle>> triangleDictionary = new Dictionary<int, List<Triangle>>();
-        List<List<int>> outlines = new List<List<int>>();
-        HashSet<int> checkedVertices = new HashSet<int>();
+        private Dictionary<int, List<Triangle>> triangleDictionary = new Dictionary<int, List<Triangle>>();
+        private readonly List<List<int>> outlines = new List<List<int>>();
+        private readonly HashSet<int> checkedVertices = new HashSet<int>();
 
         private GameObject[,] meshes;
-
 
         public void Collision(Vector3 position)
         {
             squareGrid.FindCollisionPoint(position);
 
-            //triangleDictionary.Clear();
             outlines.Clear();
             checkedVertices.Clear();
 
@@ -44,7 +40,7 @@ namespace TestApp.Mesh
             CreateWallMesh();
         }
 
-        void CreateMesh()
+        private void CreateMesh()
         {
             int count = 0;
             for (int x = 0; x < squareGrid.map.GetLength(0); x++)
@@ -63,7 +59,6 @@ namespace TestApp.Mesh
                 {
                     if (squareGrid.squares[x, y].needRecalculate)
                     {
-                        //Debug.Log("Recalculate node " + x + " " + y);
                         TriangulateSquare(squareGrid.squares[x, y]);
                     }
                     else
@@ -98,28 +93,32 @@ namespace TestApp.Mesh
                         continue;
                     }
 
-
-
-                    var go = GameObject.CreatePrimitive(PrimitiveType.Cube);
-                    go.name = x + " " + y;
-
-                    meshes[x, y] = go;
-                    var meshF = go.GetComponent<MeshFilter>();
-                    Destroy(meshF.GetComponent<Collider>());
-                    UnityEngine.Mesh tmp = new UnityEngine.Mesh();
-                    meshF.mesh = tmp;
-
-                    tmp.vertices = squareGrid.squares[x, y].vertsTemp.vertsList.ToArray();
-                    tmp.triangles = squareGrid.squares[x, y].triandles.ToArray();
-                    tmp.RecalculateNormals();
-
-                    go.GetComponent<MeshRenderer>().material = Resources.Load<Material>("Player");
-
+                    CreateMeshPart(x, y);
                 }
             }
         }
 
-        void CreateWallMesh()
+        private void CreateMeshPart(int x, int y)
+        {
+            var go = Instantiate(Resources.Load<GameObject>("Prefabs/meshTemplate"));
+            go.name = x + " " + y;
+            go.transform.parent = caveTransform;
+            meshes[x, y] = go;
+
+            var meshFilter = go.GetComponent<MeshFilter>();
+
+            UnityEngine.Mesh mesh = new UnityEngine.Mesh();
+
+            meshFilter.mesh = mesh;
+
+            mesh.vertices = squareGrid.squares[x, y].vertsTemp.vertsList.ToArray();
+            mesh.triangles = squareGrid.squares[x, y].vertsTemp.triandles.ToArray();
+            mesh.RecalculateNormals();
+
+            go.GetComponent<MeshRenderer>().material = Resources.Load<Material>("Player");
+        }
+
+        private void CreateWallMesh()
         {
             MeshCollider currentCollider = GetComponent<MeshCollider>();
             Destroy(currentCollider);
@@ -158,7 +157,7 @@ namespace TestApp.Mesh
 
         }
 
-        void TriangulateSquare(Square square)
+        private void TriangulateSquare(Square square)
         {
             switch (square.configuration)
             {
@@ -217,10 +216,10 @@ namespace TestApp.Mesh
                 case 15:
                     MeshFromPoints(square, square.topLeft, square.topRight, square.bottomRight, square.bottomLeft);
 
-                    square.checkedVertices.Add(square.topLeft.vertexIndex - square.firstIndex);
-                    square.checkedVertices.Add(square.topRight.vertexIndex - square.firstIndex);
-                    square.checkedVertices.Add(square.bottomRight.vertexIndex - square.firstIndex);
-                    square.checkedVertices.Add(square.bottomLeft.vertexIndex - square.firstIndex);
+                    square.vertsTemp.checkedVertices.Add(square.topLeft.vertexIndex - square.vertsTemp.firstIndex);
+                    square.vertsTemp.checkedVertices.Add(square.topRight.vertexIndex - square.vertsTemp.firstIndex);
+                    square.vertsTemp.checkedVertices.Add(square.bottomRight.vertexIndex - square.vertsTemp.firstIndex);
+                    square.vertsTemp.checkedVertices.Add(square.bottomLeft.vertexIndex - square.vertsTemp.firstIndex);
 
                     checkedVertices.Add(square.topLeft.vertexIndex);
                     checkedVertices.Add(square.topRight.vertexIndex);
@@ -231,16 +230,14 @@ namespace TestApp.Mesh
 
         }
 
-        void MeshFromPoints(Square square, params Node[] points)
+        private void MeshFromPoints(Square square, params Node[] points)
         {
-            //if (square.firstIndex == -1)
-            {
-                square.firstIndex = vertices.Count;
-            }
-            //var localIndex = vertices.Count;
+            VertWithIndexes info = new VertWithIndexes();
 
-            square.vertsTemp = AssignVertices(points);
-            square.triangleL.Clear();
+            square.vertsTemp = info;
+            square.vertsTemp.firstIndex = vertices.Count;
+
+            AssignVertices(points, info);
 
             if (points.Length >= 3)
             {
@@ -260,71 +257,40 @@ namespace TestApp.Mesh
             }
         }
 
-        public class VertWithIndexes
+        private void AssignVertices(Node[] points, VertWithIndexes info)
         {
-            public List<Vector3> vertsList = new List<Vector3>();
-            public List<int> vertIndexes = new List<int>();
-        }
-
-        VertWithIndexes AssignVertices(Node[] points)
-        {
-            VertWithIndexes info = new VertWithIndexes();
-
             for (int i = 0; i < points.Length; i++)
             {
-                //if (info.firstIndex == -1)
-                //{
-                //    info.firstIndex = vertices.Count;
-                //}
-                //if (points[i].vertexIndex == -1)
-                {
-                    points[i].vertexIndex = vertices.Count;
-                    vertices.Add(points[i].position);
+                points[i].vertexIndex = vertices.Count;
+                vertices.Add(points[i].position);
 
-                    info.vertIndexes.Add(points[i].vertexIndex);
-                    info.vertsList.Add(points[i].position);
-
-
-                }
+                info.vertsList.Add(points[i].position);
             }
-
-            return info;
         }
 
-        void CreateTriangle(Square square, Node a, Node b, Node c)
+        private void CreateTriangle(Square square, Node a, Node b, Node c)
         {
-            square.triandles.Add(a.vertexIndex - square.firstIndex);
-            square.triandles.Add(b.vertexIndex - square.firstIndex);
-            square.triandles.Add(c.vertexIndex - square.firstIndex);
-
-            Triangle triangle = new Triangle(a.vertexIndex, b.vertexIndex, c.vertexIndex);
-            square.triangleL.Add(triangle);
-            //AddTriangleToDictionary(triangle.vertexIndexA, triangle);
-            //AddTriangleToDictionary(triangle.vertexIndexB, triangle);
-            //AddTriangleToDictionary(triangle.vertexIndexC, triangle);
+            square.vertsTemp.triandles.Add(a.vertexIndex - square.vertsTemp.firstIndex);
+            square.vertsTemp.triandles.Add(b.vertexIndex - square.vertsTemp.firstIndex);
+            square.vertsTemp.triandles.Add(c.vertexIndex - square.vertsTemp.firstIndex);
         }
 
-        void AddTriangleToDictionary(int vertexIndexKey, Triangle triangle)
+        private void AddTriangleToDictionary(int vertexIndexKey, Triangle triangle)
         {
 
             if (triangleDictionary.ContainsKey(vertexIndexKey))
             {
-                calc++;
                 triangleDictionary[vertexIndexKey].Add(triangle);
             }
             else
             {
-                calc2++;
                 List<Triangle> triangleList = new List<Triangle>();
                 triangleList.Add(triangle);
                 triangleDictionary.Add(vertexIndexKey, triangleList);
             }
         }
 
-        int calc = 0;
-        int calc2 = 0;
-
-        void CalculateMeshOutlines()
+        private void CalculateMeshOutlines()
         {
             checkedVertices.Clear();
             vertices.Clear();
@@ -341,52 +307,39 @@ namespace TestApp.Mesh
                     }
 
                     var count = vertices.Count;
+
                     foreach (var vertice in squareGrid.squares[x, y].vertsTemp.vertsList)
                     {
-                        //if (vertices.Count == 9135)
-                        //{
-                        //    Debug.Log(x + " - " + y);
-                        //}
                         vertices.Add(vertice);
                     }
 
-                    foreach (var checkedVertex in squareGrid.squares[x, y].checkedVertices)
+                    foreach (var checkedVertex in squareGrid.squares[x, y].vertsTemp.checkedVertices)
                     {
                         checkedVertices.Add(checkedVertex + count);
                     }
 
-
-                    if (squareGrid.squares[x, y].triangleL.Count > 0)
+                    if (squareGrid.squares[x, y].vertsTemp.triandles.Count > 0)
                     {
-                        var mod = 0;
-                        foreach (var triangle1 in squareGrid.squares[x, y].triangleL)
+                        for (int i = 0; i < squareGrid.squares[x, y].vertsTemp.triandles.Count -1 ; i += 3)
                         {
-                            Triangle triangle = 
-                                //triangle1;
-                            new Triangle(
-                            squareGrid.squares[x, y].triandles[mod] + count,
-                            squareGrid.squares[x, y].triandles[mod + 1] + count,
-                            squareGrid.squares[x, y].triandles[mod + 2] + count
-                            );
+                            Triangle triangle = new Triangle(
+                                squareGrid.squares[x, y].vertsTemp.triandles[i] + count,
+                                squareGrid.squares[x, y].vertsTemp.triandles[i + 1] + count,
+                                squareGrid.squares[x, y].vertsTemp.triandles[i + 2] + count
+                                );
 
                             AddTriangleToDictionary(triangle.vertexIndexA, triangle);
                             AddTriangleToDictionary(triangle.vertexIndexB, triangle);
                             AddTriangleToDictionary(triangle.vertexIndexC, triangle);
-
-                            mod += 3;
                         }
-
                     }
                 }
             }
+
             for (int vertexIndex = 0; vertexIndex < vertices.Count; vertexIndex++)
             {
                 if (!checkedVertices.Contains(vertexIndex))
                 {
-                    //while (!triangleDictionary.ContainsKey(vertexIndex))
-                    //{
-                    //    vertexIndex++;
-                    //}
                     int newOutlineVertex = GetConnectedOutlineVertex(vertexIndex);
                     if (newOutlineVertex != -1)
                     {
@@ -404,7 +357,7 @@ namespace TestApp.Mesh
             SimplifyMeshOutlines();
         }
 
-        void SimplifyMeshOutlines()
+        private void SimplifyMeshOutlines()
         {
             for (int outlineIndex = 0; outlineIndex < outlines.Count; outlineIndex++)
             {
@@ -425,7 +378,7 @@ namespace TestApp.Mesh
             }
         }
 
-        void FollowOutline(int vertexIndex, int outlineIndex)
+        private void FollowOutline(int vertexIndex, int outlineIndex)
         {
             outlines[outlineIndex].Add(vertexIndex);
             checkedVertices.Add(vertexIndex);
@@ -437,7 +390,7 @@ namespace TestApp.Mesh
             }
         }
 
-        int GetConnectedOutlineVertex(int vertexIndex)
+        private int GetConnectedOutlineVertex(int vertexIndex)
         {
             if (!triangleDictionary.ContainsKey(vertexIndex))
             {
@@ -465,7 +418,7 @@ namespace TestApp.Mesh
             return -1;
         }
 
-        bool IsOutlineEdge(int vertexA, int vertexB)
+        private bool IsOutlineEdge(int vertexA, int vertexB)
         {
             List<Triangle> trianglesContainingVertexA = triangleDictionary[vertexA];
             int sharedTriangleCount = 0;
@@ -483,5 +436,15 @@ namespace TestApp.Mesh
             }
             return sharedTriangleCount == 1;
         }
+    }
+
+    public class VertWithIndexes
+    {
+        public List<Vector3> vertsList = new List<Vector3>();
+        public List<int> triandles = new List<int>();
+        public HashSet<int> checkedVertices = new HashSet<int>();
+
+
+        public int firstIndex = -1;
     }
 }

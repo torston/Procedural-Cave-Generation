@@ -1,48 +1,65 @@
-﻿using UnityEngine;
-using System.Collections;
+﻿using System;
+using UnityEngine;
 
 public class CameraScroll : MonoBehaviour
 {
-    Vector3 prevPos = Vector3.zero;
-    private float min = 30f;
-    private float ROTSpeed = 2f;
+    private Vector3 prevPos = Vector3.zero;
+    private float cameraToGroundDstance = 0f;
+
+    private float min = 20f;
     private float max = 60f;
 
-    float curZoomPos, zoomTo;
-    float zoomFrom = 60f;
+    private float zoomTo;
 
+    [SerializeField]
+    private Transform groundTransform;
 
-    void LateUpdate()
+    private void Awake()
+    {
+        cameraToGroundDstance = transform.position.y - groundTransform.position.y;
+    }
+
+    private void LateUpdate()
     {
         if (Input.GetMouseButtonDown(0))
         {
-            var t = Input.mousePosition;
-            t.z = 63;
-            prevPos = Camera.main.ScreenToWorldPoint(t);
+            var mousePosition = Input.mousePosition;
+            mousePosition.z = cameraToGroundDstance;
+            prevPos = Camera.main.ScreenToWorldPoint(mousePosition);
         }
-        if (Input.GetMouseButton(0))
+        else if (Input.GetMouseButton(0))
         {
-            var t = Input.mousePosition;
-            t.z = 63;
-            var pos = Camera.main.ScreenToWorldPoint(t);
-            //Debug.Log(pos + " " + prevPos);
+            var mousePosition = Input.mousePosition;
+            mousePosition.z = cameraToGroundDstance;
+            var pos = Camera.main.ScreenToWorldPoint(mousePosition);
             pos.y = transform.position.y;
             prevPos.y = pos.y;
 
             transform.Translate(prevPos - pos, Space.World);
         }
 
-        float y = Input.mouseScrollDelta.y;
-        if (y >= 1)
+        Zoom();
+    }
+
+    private void Zoom()
+    {
+        float mouseWheelScroll = Input.mouseScrollDelta.y;
+
+        if (Math.Abs(mouseWheelScroll) < 0.00001f)
+        {
+            return;
+        }
+
+        if (mouseWheelScroll >= 1)
         {
             zoomTo = 5f;
         }
-        else if (y <= -1)
+        else if (mouseWheelScroll <= -1)
         {
             zoomTo = -5f;
         }
 
-        Camera.main.fieldOfView = Mathf.Clamp(zoomTo + Camera.main.fieldOfView, 20f, 60f);
+        Camera.main.fieldOfView = Mathf.Clamp(zoomTo + Camera.main.fieldOfView, min, max);
         zoomTo = 0;
     }
 }

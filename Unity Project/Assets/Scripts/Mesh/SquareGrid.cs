@@ -8,7 +8,6 @@ namespace TestApp.Mesh
         public Square[,] squares;
         public ControlNode[,] controlNodes;
 
-
         public float squareSize = 0f;
         public int[,] map;
 
@@ -53,9 +52,9 @@ namespace TestApp.Mesh
 
         public void FindCollisionPoint(Vector3 position)
         {
-            float dist = float.MaxValue;
-            int x1 = 0;
-            int y1 = 0;
+            float distance = float.MaxValue;
+            int i = 0;
+            int j = 0;
             for (int x = 0; x < controlNodes.GetLength(0); x++)
             {
                 for (int y = 0; y < controlNodes.GetLength(1); y++)
@@ -64,46 +63,27 @@ namespace TestApp.Mesh
                     {
                         continue;
                     }
-                    if (Vector3.Distance(controlNodes[x, y].position, position) < dist)
+                    var toCollisionDistance = Vector3.Distance(controlNodes[x, y].position, position);
+                    if (toCollisionDistance < distance)
                     {
-                        dist = Vector3.Distance(controlNodes[x, y].position, position);
-                        x1 = x;
-                        y1 = y;
+                        distance = toCollisionDistance;
+                        i = x;
+                        j = y;
                     }
                 }
             }
 
-            map[x1, y1] = 0;
-            controlNodes[x1, y1].active = false;
+            map[i, j] = 0;
+            controlNodes[i, j].active = false;
 
             int nodeCountX = map.GetLength(0);
             int nodeCountY = map.GetLength(1);
-
-            //Debug.Log("Collision node " + x1 + " " + y1);
-
-            //for (int i = -1; i < 2; i++)
-            //{
-            //    for (int j = -1; j < 2; j++)
-            //    {
-            //        if (squares[x1 + i, y1 + j].CheckNodes(controlNodes[x1 + i, y1 + j]))
-            //        {
-            //            Debug.Log(" (1) Affected vertex " + (x1 + i) + " " + (y1 + j));
-            //        }
-            //    }
-            //}
-
-            
 
             for (int x = 0; x < nodeCountX - 1; x++)
             {
                 for (int y = 0; y < nodeCountY - 1; y++)
                 {
-                    if (squares[x, y].CheckNodes(controlNodes[x1, y1]))
-                    {
-                        //squares[x, y].DrawSquare(controlNodes[x1, y1]);
-                        //Debug.Log("Affected vertex " + x + " " + y);
-                    }
-
+                    squares[x, y].CheckNodes(controlNodes[i, j]);
                 }
             }
         }

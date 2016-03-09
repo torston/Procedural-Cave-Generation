@@ -98,7 +98,6 @@ namespace TestApp.Map
 
         private void ConnectClosestRooms(List<Room> allRooms, bool forceAccessibilityFromMainRoom = false)
         {
-
             List<Room> roomListA = new List<Room>();
             List<Room> roomListB = new List<Room>();
 

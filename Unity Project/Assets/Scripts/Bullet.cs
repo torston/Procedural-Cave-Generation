@@ -1,58 +1,50 @@
 ﻿using UnityEngine;
 using System.Collections;
 using TestApp.Mesh;
+using System;
 
-public class Bullet : MonoBehaviour 
+public class Bullet : MonoBehaviour
 {
-	public static bool bulletActive;
+    private Vector3 direction;
 
-	Vector3 direction;
-	float time = 1f;
-	float timeFlying = 0f;
-	MeshGenerator gen;
+    private float time = 1f;
+    private float timeFlying = 0f;
 
-	public void Init (Vector3 direction, Vector3 startPos, MeshGenerator gen) 
-	{
+    private CollisionProcessor collisionProcessor;
 
-		Menu.Instance.Bullets--;
-		this.gen = gen;
-		gameObject.layer = 9;
-		transform.position = startPos;
-		bulletActive = true;
-		this.direction = direction;
+    private void FixedUpdate()
+    {
+        transform.Translate(direction, Space.World);
 
-		var rig = gameObject.AddComponent<Rigidbody> ();
-	
-		rig.detectCollisions = true;
-		rig.collisionDetectionMode = CollisionDetectionMode.ContinuousDynamic;
-        rig.interpolation = RigidbodyInterpolation.Extrapolate;
+        timeFlying += Time.fixedDeltaTime;
 
+        if (timeFlying >= time)
+        {
+            DestroyBullet();
+        }
     }
 
-	void FixedUpdate () 
-	{
-		transform.Translate (direction, Space.World);
+    private void OnCollisionEnter(Collision collision)
+    {
+        if (!collisionProcessor.ProcessCollision(collision))
+        {
+            return;
+        }
+        DestroyBullet();
+    }
 
-		timeFlying += Time.fixedDeltaTime;
+    private void DestroyBullet()
+    {
+        Destroy(gameObject);
+    }
 
-		if (timeFlying >= time) {
-			DestroyBullet ();
-		}
-	}
+    public void Init(Vector3 direction, Vector3 position, CollisionProcessor collisionProcessor)
+    {
+        Menu.Instance.Bullets--;
 
-	void OnCollisionEnter(Collision collision)
-	{
-		if (collision.gameObject.tag != "wall") 
-		{
-			return;
-		}
-        GetComponent<Collider>().enabled = false;
-        gen.Collision (collision.contacts [0].point);
-		DestroyBullet ();
-	}
+        transform.position = position;
 
-	void DestroyBullet(){
-		bulletActive = false;
-		Destroy (gameObject);
-	}
+        this.direction = direction;
+        this.collisionProcessor = collisionProcessor;
+    }
 }
