@@ -268,7 +268,7 @@ GameObject:
   - 222: {fileID: 380045181}
   - 114: {fileID: 380045180}
   m_Layer: 5
-  m_Name: Text (1)
+  m_Name: bullets
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -288,8 +288,8 @@ RectTransform:
   m_RootOrder: 1
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 153.5, y: 238.18}
-  m_SizeDelta: {x: 160, y: 30}
+  m_AnchoredPosition: {x: -230, y: 230}
+  m_SizeDelta: {x: 150, y: 30}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &380045180
 MonoBehaviour:
@@ -303,7 +303,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_Color: {r: 0, g: 0, b: 0, a: 1}
   m_RaycastTarget: 1
   m_OnCullStateChanged:
     m_PersistentCalls:
@@ -673,7 +673,7 @@ GameObject:
   - 114: {fileID: 1548727495}
   - 114: {fileID: 1548727494}
   m_Layer: 5
-  m_Name: Button
+  m_Name: ResetButton
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -694,7 +694,7 @@ RectTransform:
   m_RootOrder: 2
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -236.36, y: 240.22}
+  m_AnchoredPosition: {x: 28.5, y: 230}
   m_SizeDelta: {x: 160, y: 30}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1548727494
@@ -801,11 +801,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f91beb20f69004693ab02bd83ac88df3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  bulletsCount: 100
-  nodes: 1000
-  bullets: {fileID: 1699100612}
-  nodesL: {fileID: 380045180}
+  bulletsCount: {fileID: 380045180}
+  nodesCount: {fileID: 1699100612}
   reset: {fileID: 1548727494}
+  meshGenerator: {fileID: 509230444}
+  player: {fileID: 1268431300}
 --- !u!114 &1698985301
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -892,7 +892,7 @@ GameObject:
   - 222: {fileID: 1699100613}
   - 114: {fileID: 1699100612}
   m_Layer: 5
-  m_Name: Text
+  m_Name: segments
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -910,10 +910,10 @@ RectTransform:
   m_Children: []
   m_Father: {fileID: 1698985304}
   m_RootOrder: 0
-  m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 0, y: 238.18}
-  m_SizeDelta: {x: -598, y: -538}
+  m_AnchorMin: {x: 0.5, y: 0.5}
+  m_AnchorMax: {x: 0.5, y: 0.5}
+  m_AnchoredPosition: {x: -95, y: 230}
+  m_SizeDelta: {x: 150, y: 30}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1699100612
 MonoBehaviour:
@@ -927,7 +927,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_Color: {r: 0, g: 0, b: 0, a: 1}
   m_RaycastTarget: 1
   m_OnCullStateChanged:
     m_PersistentCalls:

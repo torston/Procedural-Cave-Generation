@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using TestApp.Mesh;
+using UniRx;
 
 namespace TestApp.Player
 {
@@ -15,13 +16,10 @@ namespace TestApp.Player
         private CollisionProcessor collisionProcessor;
         private GameObject bullet;
 
-        public Vector3 Direction
-        {
-            get
-            {
-                return direction;
-            }
-        }
+        private int initialBulletsCount = 100;
+
+        public IReactiveProperty<int> BulletsCount { get; set; }
+        private IReactiveProperty<bool> isNoBullets { get; set; }
 
         private void Start()
         {
@@ -29,6 +27,10 @@ namespace TestApp.Player
 
             collisionProcessor = gameObject.AddComponent<CollisionProcessor>();
             collisionProcessor.Init(generator);
+
+            BulletsCount = new ReactiveProperty<int>(initialBulletsCount);
+            isNoBullets = BulletsCount.Select(x => x <= 0).ToReactiveProperty();
+
         }
 
         private void Update()
@@ -41,7 +43,7 @@ namespace TestApp.Player
             }
             if (Input.GetKeyUp(KeyCode.Space))
             {
-                if (bullet != null)
+                if (bullet != null || isNoBullets.Value)
                 {
                     return;
                 }
@@ -56,6 +58,8 @@ namespace TestApp.Player
 
         private void Shoot()
         {
+            BulletsCount.Value--;
+
             bullet = Instantiate(Resources.Load<GameObject>("Prefabs/bullet"));
             bullet.GetComponent<Bullet>().Init(direction, transform.position, collisionProcessor);
         }

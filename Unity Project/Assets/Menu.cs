@@ -1,59 +1,33 @@
-﻿using UnityEngine;
+﻿using TestApp.Mesh;
+using TestApp.Player;
+using UniRx;
+using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
-public class Menu : MonoBehaviour 
+public class Menu : MonoBehaviour
 {
-	public int bulletsCount = 100;
-	public int nodes = 1000;
+    public Text bulletsCount;
+    public Text nodesCount;
 
+    public Button reset;
 
-	public int Nodes
-	{
-		get{ return nodes;}
-		set 
-		{
-			if (value != nodes) 
-			{
-				nodes = value;
-				nodesL.text = nodes.ToString ();
-				
-			} 
-		}
-		
-	}
+    public MeshGenerator meshGenerator;
+    public Player player;
 
-	public int Bullets
-	{
-		get{ return bulletsCount;}
-		set 
-		{
-			if (value != bulletsCount) 
-			{
-				bulletsCount = value;
-				bullets.text = bulletsCount.ToString ();
+    private void Awake()
+    {
+        reset.onClick.AddListener(Reset);
+    }
 
-			} 
-		}
+    private void Start()
+    {
+        meshGenerator.SegmentsCount.SubscribeToText(nodesCount);
+        player.BulletsCount.SubscribeToText(bulletsCount);
+    }
 
-	}
-
-	public Text bullets;
-	public Text nodesL;
-	public Button reset;
-
-	public static Menu Instance;
-
-
-	void Awake() {
-
-		Instance = this;
-		reset.onClick.AddListener(Reset); 
-		Nodes = 1000;
-		Bullets = 100;
-	}
-
-	public void Reset() {
-		SceneManager.LoadScene (0);
-	}
+    public void Reset()
+    {
+        SceneManager.LoadScene(0);
+    }
 }

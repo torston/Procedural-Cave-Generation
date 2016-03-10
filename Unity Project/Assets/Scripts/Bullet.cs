@@ -1,7 +1,4 @@
 ﻿using UnityEngine;
-using System.Collections;
-using TestApp.Mesh;
-using System;
 
 public class Bullet : MonoBehaviour
 {
@@ -40,8 +37,6 @@ public class Bullet : MonoBehaviour
 
     public void Init(Vector3 direction, Vector3 position, CollisionProcessor collisionProcessor)
     {
-        Menu.Instance.Bullets--;
-
         transform.position = position;
 
         this.direction = direction;

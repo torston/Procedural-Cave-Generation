@@ -1,5 +1,6 @@
 using UnityEngine;
 using System.Collections.Generic;
+using UniRx;
 
 namespace TestApp.Mesh
 {
@@ -16,6 +17,8 @@ namespace TestApp.Mesh
         private readonly HashSet<int> checkedVertices = new HashSet<int>();
 
         private GameObject[,] meshes;
+
+        public IReactiveProperty<int> SegmentsCount { get; private set; }
 
         public void Collision(Vector3 position)
         {
@@ -34,6 +37,17 @@ namespace TestApp.Mesh
             outlines.Clear();
             checkedVertices.Clear();
 
+            int count = 0;
+            for (int x = 0; x < map.GetLength(0); x++)
+            {
+                for (int y = 0; y < map.GetLength(1); y++)
+                {
+                    count += map[x, y];
+                }
+            }
+
+            SegmentsCount = new ReactiveProperty<int>(count);
+
             squareGrid = new SquareGrid(map, squareSize);
             meshes = new GameObject[map.GetLength(0), map.GetLength(1)];
             CreateMesh();
@@ -50,7 +64,9 @@ namespace TestApp.Mesh
                     count += squareGrid.map[x, y];
                 }
             }
-            Menu.Instance.Nodes = count;
+
+            SegmentsCount.Value = count;
+
             vertices = new List<Vector3>();
 
             for (int x = 0; x < squareGrid.squares.GetLength(0); x++)
