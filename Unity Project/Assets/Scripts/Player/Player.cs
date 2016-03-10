@@ -1,12 +1,13 @@
 ﻿using UnityEngine;
 using TestApp.Mesh;
 using UniRx;
+using Zenject;
 
 namespace TestApp.Player
 {
-    public class Player : MonoBehaviour
+    public class Player : MonoBehaviour, IInitializable
     {
-        [SerializeField]
+        [Inject]
         private MeshGenerator generator;
 
         private Rigidbody cachedRigidbody;
@@ -16,12 +17,12 @@ namespace TestApp.Player
         private CollisionProcessor collisionProcessor;
         private GameObject bullet;
 
-        private int initialBulletsCount = 100;
+        private static int initialBulletsCount = 100;
 
         public IReactiveProperty<int> BulletsCount { get; set; }
         private IReactiveProperty<bool> isNoBullets { get; set; }
 
-        private void Start()
+        public void Initialize()
         {
             cachedRigidbody = GetComponent<Rigidbody>();
 
@@ -67,6 +68,11 @@ namespace TestApp.Player
         private void OnCollisionEnter(Collision collision)
         {
             collisionProcessor.ProcessCollision(collision);
+        }
+
+        private void OnDestroy()
+        {
+            initialBulletsCount = BulletsCount.Value;
         }
     }
 }

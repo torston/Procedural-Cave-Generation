@@ -2,10 +2,11 @@
 using System.Collections.Generic;
 using System;
 using TestApp.Mesh;
+using Zenject;
 
 namespace TestApp.Map
 {
-    public class MapGenerator : MonoBehaviour
+    public class MapGenerator : MonoBehaviour, IInitializable
     {
         public int width;
         public int height;
@@ -17,8 +18,10 @@ namespace TestApp.Map
         public int randomFillPercent;
 
         private int[,] map;
+        [Inject]
+        private MeshGenerator meshGen;
 
-        private void Start()
+        public void Initialize()
         {
             GenerateMap();
         }
@@ -51,8 +54,6 @@ namespace TestApp.Map
                     }
                 }
             }
-
-            MeshGenerator meshGen = GetComponent<MeshGenerator>();
             meshGen.GenerateMesh(borderedMap, 1);
         }
 

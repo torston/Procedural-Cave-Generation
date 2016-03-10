@@ -4,24 +4,25 @@ using UniRx;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
+using Zenject;
 
-public class Menu : MonoBehaviour
+public class Menu : MonoBehaviour, IInitializable
 {
-    public Text bulletsCount;
-    public Text nodesCount;
+    [SerializeField]
+    private Text bulletsCount;
+    [SerializeField]
+    private Text nodesCount;
+    [SerializeField]
+    private Button reset;
+    [Inject]
+    private MeshGenerator meshGenerator;
+    [Inject]
+    private Player player;
 
-    public Button reset;
-
-    public MeshGenerator meshGenerator;
-    public Player player;
-
-    private void Awake()
+    public void Initialize()
     {
         reset.onClick.AddListener(Reset);
-    }
 
-    private void Start()
-    {
         meshGenerator.SegmentsCount.SubscribeToText(nodesCount);
         player.BulletsCount.SubscribeToText(bulletsCount);
     }
